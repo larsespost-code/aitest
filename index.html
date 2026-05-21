@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HK · AI-kompetencer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --hk-blue: #009FE3;
+    --hk-dark: #004052;
+    --hk-mid: #649DB8;
+    --hk-light: #DEEEEE;
+    --hk-cream: #F7F4E4;
+    --hk-warm: #D0CDBC;
+    --r: 10px;
+    --font: 'DM Sans', system-ui, sans-serif;
+  }
+  html { min-height: 100%; background: #f0f4f4; }
+  body { font-family: var(--font); color: var(--hk-dark); min-height: 100vh; }
+
+  /* Header */
+  .site-header {
+    background: var(--hk-dark);
+    padding: 1rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .site-logo { font-size: 18px; font-weight: 500; color: #fff; letter-spacing: .04em; }
+  .site-logo span { color: var(--hk-blue); }
+  .header-tag { font-size: 12px; color: var(--hk-mid); letter-spacing: .06em; text-transform: uppercase; }
+
+  /* Layout */
+  .page { max-width: 660px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+
+  /* Progress */
+  .prog-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: .75rem; }
+  .step-label { font-size: 12px; color: var(--hk-mid); font-weight: 500; }
+  .prog-track { height: 4px; background: var(--hk-warm); border-radius: 2px; margin-bottom: 2rem; overflow: hidden; }
+  .prog-fill { height: 100%; background: var(--hk-blue); border-radius: 2px; transition: width .45s cubic-bezier(.4,0,.2,1); }
+
+  /* Cards */
+  .card { background: var(--hk-cream); border: 1px solid var(--hk-warm); border-radius: var(--r); padding: 1.75rem; margin-bottom: 1rem; }
+  .intro-box { background: var(--hk-light); border-left: 3px solid var(--hk-blue); border-radius: 0 var(--r) var(--r) 0; padding: 1rem 1.25rem; margin-bottom: 1.5rem; }
+  .intro-box p { font-size: 15px; color: var(--hk-dark); line-height: 1.65; }
+
+  /* Question header */
+  .domain-tag { display: inline-flex; align-items: center; font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 20px; margin-bottom: .85rem; background: var(--hk-light); color: var(--hk-dark); letter-spacing: .06em; text-transform: uppercase; }
+  .q-title { font-size: 19px; font-weight: 500; color: var(--hk-dark); line-height: 1.4; margin-bottom: 1.25rem; }
+
+  /* Grid pickers */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .5rem; }
+  @media(max-width:480px){ .grid3 { grid-template-columns: 1fr 1fr; } .grid2 { grid-template-columns: 1fr; } }
+  .pick-btn {
+    padding: .8rem 1rem; border: 1px solid var(--hk-warm); border-radius: var(--r);
+    cursor: pointer; font-size: 14px; font-weight: 500; color: var(--hk-dark);
+    text-align: center; background: #fff; transition: all .15s; width: 100%;
+    font-family: var(--font);
+  }
+  .pick-btn:hover { border-color: var(--hk-mid); background: var(--hk-light); }
+  .pick-btn.selected { border-color: var(--hk-blue); background: var(--hk-light); color: var(--hk-dark); }
+
+  /* Answer options */
+  .opts { display: flex; flex-direction: column; gap: .5rem; }
+  .opt {
+    display: grid; grid-template-columns: 108px 1fr; gap: .85rem; align-items: start;
+    padding: .9rem 1rem; border: 1px solid var(--hk-warm); border-radius: var(--r);
+    cursor: pointer; transition: all .15s; background: #fff;
+  }
+  @media(max-width:500px){ .opt { grid-template-columns: 1fr; } }
+  .opt:hover { border-color: var(--hk-mid); background: var(--hk-light); }
+  .opt.selected { border-color: var(--hk-blue); background: var(--hk-light); }
+  .opt.not-yet { background: var(--hk-cream); }
+  .opt.not-yet:hover { background: var(--hk-light); border-color: var(--hk-mid); }
+  .opt.not-yet.selected { border-color: var(--hk-mid); background: var(--hk-light); }
+  .opt-indicator { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; padding-top: 2px; }
+  .level-pill {
+    display: inline-block; font-size: 11px; font-weight: 500; padding: 3px 8px;
+    border-radius: 20px; white-space: nowrap; background: var(--hk-warm); color: var(--hk-dark);
+  }
+  .opt.selected .level-pill { background: var(--hk-blue); color: #fff; }
+  .opt.not-yet.selected .level-pill { background: var(--hk-mid); color: #fff; }
+  .ldots { display: flex; gap: 3px; margin-top: 2px; }
+  .ldot { width: 6px; height: 6px; border-radius: 50%; background: var(--hk-warm); }
+  .opt.selected .ldot.on { background: var(--hk-blue); }
+  .opt-text { font-size: 14px; color: var(--hk-dark); line-height: 1.6; padding-top: 2px; }
+  .not-yet .opt-text { color: var(--hk-mid); }
+
+  /* Nav */
+  .nav { display: flex; justify-content: space-between; align-items: center; margin-top: .5rem; }
+  .btn {
+    padding: .65rem 1.5rem; border-radius: var(--r); font-size: 14px; font-weight: 500;
+    cursor: pointer; border: 1px solid var(--hk-warm); background: transparent;
+    color: var(--hk-dark); transition: all .15s; font-family: var(--font);
+  }
+  .btn:hover { background: var(--hk-light); border-color: var(--hk-mid); }
+  .btn.primary { background: var(--hk-blue); color: #fff; border-color: var(--hk-blue); }
+  .btn.primary:hover { background: #008cca; border-color: #008cca; }
+  .btn:disabled { opacity: .3; cursor: default; pointer-events: none; }
+
+  /* Sending state */
+  .sending-state { text-align: center; padding: 3rem 1.5rem; }
+  .sending-icon {
+    width: 44px; height: 44px; border: 3px solid var(--hk-light);
+    border-top-color: var(--hk-blue); border-radius: 50%;
+    animation: spin .8s linear infinite; margin: 0 auto 1.25rem;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .sending-state p { font-size: 15px; color: var(--hk-mid); }
+
+  /* Result */
+  .result-top {
+    text-align: center; padding: 2rem 1.75rem;
+    background: var(--hk-dark); border-radius: var(--r);
+    margin-bottom: 1rem; color: #fff;
+  }
+  .arch-chip {
+    display: inline-block; font-size: 12px; font-weight: 500;
+    padding: 4px 14px; border-radius: 20px;
+    background: var(--hk-blue); color: #fff; margin-bottom: .85rem; letter-spacing: .03em;
+  }
+  .result-name { font-size: 21px; font-weight: 500; color: #fff; margin-bottom: .25rem; }
+  .result-sub { font-size: 13px; color: var(--hk-mid); margin-bottom: .85rem; }
+  .result-desc { font-size: 14px; color: var(--hk-light); line-height: 1.65; max-width: 440px; margin: 0 auto; }
+  .sent-badge {
+    display: inline-flex; align-items: center; gap: 6px; font-size: 12px;
+    color: var(--hk-mid); background: #fff; border: 1px solid var(--hk-warm);
+    padding: 3px 10px; border-radius: 20px; margin-bottom: 1rem;
+  }
+  .sent-dot { width: 7px; height: 7px; border-radius: 50%; background: #6abf8a; flex-shrink: 0; }
+  .chart-wrap { position: relative; width: 100%; height: 300px; margin: .5rem 0 1.25rem; }
+  .scores-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
+  @media(max-width:480px){ .scores-grid { grid-template-columns: 1fr; } }
+  .score-item {
+    padding: .75rem 1rem; border: 1px solid var(--hk-warm);
+    border-radius: var(--r); background: #fff;
+    display: flex; justify-content: space-between; align-items: center; gap: .5rem;
+  }
+  .score-name { font-size: 12px; color: var(--hk-mid); margin-bottom: 4px; }
+  .rdots { display: flex; gap: 3px; }
+  .rdot { width: 9px; height: 9px; border-radius: 50%; background: var(--hk-warm); }
+  .rdot.filled { background: var(--hk-blue); }
+  .score-val { font-size: 12px; font-weight: 500; color: var(--hk-dark); text-align: right; min-width: 78px; }
+  .tip-box { background: var(--hk-light); border: 1px solid var(--hk-mid); border-radius: var(--r); padding: 1.1rem 1.25rem; margin-top: 1rem; }
+  .tip-box h3 { font-size: 14px; font-weight: 500; color: var(--hk-dark); margin-bottom: .4rem; }
+  .tip-box p { font-size: 13px; color: var(--hk-mid); line-height: 1.6; }
+  .restart-row { text-align: center; margin-top: 1.25rem; }
+  .chart-center-label { text-align: center; margin-bottom: .25rem; }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-logo"><span>HK</span> Danmark</div>
+  <div class="header-tag">AI-kompetencer</div>
+</header>
+
+<div class="page">
+  <div class="prog-row">
+    <div class="step-label" id="stepLabel">Din afdeling</div>
+  </div>
+  <div class="prog-track"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+  <div id="app"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+// ─── KONFIGURATION ───────────────────────────────────────────────────────────
+// Indsæt din Google Apps Script URL her, når den er klar:
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxBfK3lgpN2yjHuDvgg07_b1Sq96cg42IkRsGMvAHEaoznp3qymX0nt24wOcLTTz3B58g/exec";
+// ─────────────────────────────────────────────────────────────────────────────
+
+const AFDELINGER = ["Handel","IMI","Kommunal","Service","Stat","MOT"];
+const ROLLER = ["Faglig konsulent","Organiserer","Administrativ medarbejder","Sekretariatsmedarbejder","Kommunikationsmedarbejder","Leder","Andet"];
+
+const QS = [
+  {domain:"Kritisk forståelse", title:"Kritisk blik på AI", opts:[
+    "Jeg ved, at AI-værktøjer som ChatGPT ikke altid har ret, og at man skal tjekke det, de producerer",
+    "Jeg vurderer aktivt, hvornår det giver mening at bruge AI — og er opmærksom på begrænsninger som fejl, bias og fortrolighed",
+    "Jeg kan forklare kolleger, hvad de skal være opmærksomme på, og bidrager til, at AI bruges fornuftigt hos os"
+  ]},
+  {domain:"Kritisk forståelse", title:"At tale om AI med andre", opts:[
+    "Jeg kan forklare i store træk, hvad AI er og give et eksempel på, hvordan det kan bruges",
+    "Jeg kan forklare en kollega eller et medlem, hvad et konkret AI-værktøj kan og ikke kan — og hvad vi bruger det til",
+    "Jeg kan facilitere en dialog om AI i mit team eller over for ledelse og håndtere bekymringer konstruktivt"
+  ]},
+  {domain:"Brug af AI", title:"AI i det daglige arbejde", opts:[
+    "Jeg har prøvet at bruge et AI-værktøj (fx ChatGPT, Copilot) til en opgave — fx at skrive, opsummere eller søge information",
+    "Jeg bruger AI regelmæssigt — fx til mødeforberedelse, udkast eller at opsummere dokumenter — og tilpasser det AI producerer",
+    "Jeg har aktivt fundet nye måder at bruge AI på, der sparer tid eller giver bedre resultater, og deler erfaringer med kolleger"
+  ]},
+  {domain:"Brug af AI", title:"AI som støtte til min faglige udvikling", opts:[
+    "Jeg er nysgerrig på, hvad AI kan betyde for mit arbejde og min rolle",
+    "Jeg bruger AI til at lære nyt — fx til at stille spørgsmål, få begreber forklaret eller inspiration til opgaver",
+    "Jeg bruger AI regelmæssigt som del af min faglige udvikling og inspirerer kolleger til det samme"
+  ]},
+  {domain:"Nye løsninger", title:"At finde nye løsninger med AI", opts:[
+    "Jeg kan pege på et eller to steder i mit arbejde, hvor AI potentielt kunne hjælpe",
+    "Jeg har prøvet at bruge AI til at løse en udfordring på en ny måde — fx opsummere komplekse dokumenter eller forberede en forhandling",
+    "Jeg tager aktivt initiativ til at eksperimentere med AI i mit arbejde og involverer gerne kolleger"
+  ]},
+  {domain:"Ansvar og fællesskab", title:"At hjælpe kolleger godt i gang", opts:[
+    "Jeg er åben over for at dele mine erfaringer med AI, hvis en kollega spørger",
+    "Jeg kan hjælpe en kollega i gang med et AI-værktøj og forklare, hvad der er værd at være opmærksom på",
+    "Jeg tager aktivt ansvar for, at mit team eller afdeling bruger AI på en god og tryg måde"
+  ]},
+  {domain:"Ansvar og fællesskab", title:"Ansvarlig brug af AI", opts:[
+    "Jeg ved, at jeg ikke bør dele fortrolige oplysninger om medlemmer eller kolleger med AI-værktøjer",
+    "Jeg tænker aktivt over fortrolighed og etik, når jeg bruger AI, og stopper op, hvis jeg er i tvivl",
+    "Jeg bidrager til at sætte rammer for, hvordan vi bruger AI ansvarligt hos os — fx ved at foreslå retningslinjer"
+  ]}
+];
+
+const LEVELS = ["Ikke nok erfaring","Er i gang","Bruger det","Er fortrolig"];
+const NOT_YET = "Jeg har endnu ikke nok erfaring til at svare på dette";
+
+const ARCHETYPES = {
+  generalist: {
+    label: "Digital generalist",
+    desc: "Du bruger AI som et praktisk redskab i hverdagen og er på vej til at forstå teknologien godt nok til at anvende den ansvarligt og effektivt. Tyngdepunktet er AI-forståelse og AI-brug."
+  },
+  integrator: {
+    label: "Digital integrator",
+    desc: "Du bygger bro mellem teknologi og kolleger, og er godt på vej til at forankre AI bredt i din hverdag. Du er stærk på kommunikation, samarbejde og ansvarlig praksis."
+  },
+  specialist: {
+    label: "Digital specialist",
+    desc: "Du arbejder dybt med at finde og eksperimentere med nye AI-løsninger. Du er stærk på innovation og problemløsning, og kan bidrage til at løfte organisationen."
+  }
+};
+
+let step = 0, afdeling = null, rolle = null, answers = new Array(7).fill(null), radarChart = null;
+const TOTAL = 10;
+
+function getArchetype() {
+  const s = answers.map(a => a === null ? 0 : a);
+  const avg = s.reduce((a,b) => a+b, 0) / 7;
+  if (s[4] === 3) return "specialist";
+  if (avg < 1.5 && s[4] < 2) return "generalist";
+  return "integrator";
+}
+
+function setProgress() {
+  document.getElementById('progFill').style.width = Math.round((step / TOTAL) * 100) + '%';
+  const labels = { 0:'Din afdeling', 1:'Din funktion' };
+  document.getElementById('stepLabel').textContent =
+    step <= 1 ? (labels[step] || '') :
+    step <= 8 ? `Spørgsmål ${step - 1} af 7` : 'Din profil';
+}
+
+function dots(val, max=3) {
+  return [1,2,3].map(d => `<div class="ldot${val >= d ? ' on' : ''}"></div>`).join('');
+}
+
+function renderAfdeling() {
+  document.getElementById('app').innerHTML = `
+    <div class="intro-box">
+      <p>Denne kortlægning handler ikke om, hvad du burde vide eller have gjort. Den er et udgangspunkt for en samtale om, hvad der giver mening for dig og din rolle fremover. Der er ingen rigtige eller forkerte svar.</p>
+    </div>
+    <div class="card">
+      <div class="q-title">Hvilken afdeling sidder du i?</div>
+      <div class="grid3" id="afdGrid">
+        ${AFDELINGER.map(a => `<button class="pick-btn afd-btn${afdeling===a?' selected':''}" onclick="pickAfd(this,'${a}')">${a}</button>`).join('')}
+      </div>
+    </div>
+    <div class="nav"><span></span><button class="btn primary" id="afdNext" onclick="nextStep()" ${afdeling?'':'disabled'}>Næste →</button></div>`;
+}
+
+function pickAfd(el, val) {
+  afdeling = val;
+  document.querySelectorAll('.afd-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('afdNext').disabled = false;
+}
+
+function renderRolle() {
+  document.getElementById('app').innerHTML = `
+    <div class="card">
+      <div class="q-title">Hvad er din primære funktion i HK?</div>
+      <div class="grid2">
+        ${ROLLER.map(r => `<button class="pick-btn rol-btn${rolle===r?' selected':''}" onclick="pickRol(this,'${r}')">${r}</button>`).join('')}
+      </div>
+    </div>
+    <div class="nav">
+      <button class="btn" onclick="prevStep()">← Tilbage</button>
+      <button class="btn primary" id="rolNext" onclick="nextStep()" ${rolle?'':'disabled'}>Næste →</button>
+    </div>`;
+}
+
+function pickRol(el, val) {
+  rolle = val;
+  document.querySelectorAll('.rol-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('rolNext').disabled = false;
+}
+
+function renderQ(qi) {
+  const q = QS[qi]; const ans = answers[qi];
+  document.getElementById('app').innerHTML = `
+    <div class="card">
+      <div class="domain-tag">${q.domain}</div>
+      <div class="q-title">${q.title}</div>
+      <div class="opts">
+        <div class="opt not-yet${ans===0?' selected':''}" onclick="pickAns(${qi},0,this)">
+          <div class="opt-indicator">
+            <div class="level-pill">Ikke endnu</div>
+            <div class="ldots">${dots(0)}</div>
+          </div>
+          <div class="opt-text">${NOT_YET}</div>
+        </div>
+        ${q.opts.map((o,i) => `
+        <div class="opt${ans===i+1?' selected':''}" onclick="pickAns(${qi},${i+1},this)">
+          <div class="opt-indicator">
+            <div class="level-pill">${LEVELS[i+1]}</div>
+            <div class="ldots">${dots(i+1)}</div>
+          </div>
+          <div class="opt-text">${o}</div>
+        </div>`).join('')}
+      </div>
+    </div>
+    <div class="nav">
+      <button class="btn" onclick="prevStep()">← Tilbage</button>
+      <button class="btn primary" id="qNext" onclick="nextStep()" ${ans!==null?'':'disabled'}>
+        ${qi < 6 ? 'Næste →' : 'Se min profil →'}
+      </button>
+    </div>`;
+}
+
+function pickAns(qi, val, el) {
+  answers[qi] = val;
+  document.querySelectorAll('.opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('qNext').disabled = false;
+}
+
+async function submitAndShow() {
+  const archKey = getArchetype();
+  const payload = {
+    afdeling: afdeling || '',
+    funktion: rolle || '',
+    arketype: archKey,
+    svar: answers.map(a => a === null ? 0 : a),
+    timestamp: new Date().toISOString()
+  };
+
+  document.getElementById('app').innerHTML = `
+    <div class="card sending-state">
+      <div class="sending-icon"></div>
+      <p>Sender dine svar anonymt&hellip;</p>
+    </div>`;
+
+  try {
+    await fetch(SCRIPT_URL, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+  } catch(e) {}
+
+  setTimeout(() => renderResult(archKey, payload.svar), 700);
+}
+
+function renderResult(archKey, scores) {
+  const arch = ARCHETYPES[archKey];
+  document.getElementById('app').innerHTML = `
+    <div class="result-top">
+      <div class="arch-chip">${arch.label}</div>
+      <div class="result-name">${rolle || ''}</div>
+      <div class="result-sub">${afdeling || ''}</div>
+      <div class="result-desc">${arch.desc}</div>
+    </div>
+    <div class="card">
+      <div class="chart-center-label">
+        <div class="sent-badge"><div class="sent-dot"></div>Svar registreret anonymt</div>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="radarChart" role="img" aria-label="Radardiagram over dine AI-kompetencer på 7 områder">
+          ${QS.map((q,i) => `${q.title}: ${LEVELS[scores[i]]}`).join(', ')}
+        </canvas>
+      </div>
+      <div class="scores-grid">
+        ${QS.map((q,i) => `
+        <div class="score-item">
+          <div>
+            <div class="score-name">${q.title}</div>
+            <div class="rdots">${[1,2,3].map(d=>`<div class="rdot${scores[i]>=d?' filled':''}"></div>`).join('')}</div>
+          </div>
+          <div class="score-val">${LEVELS[scores[i]]}</div>
+        </div>`).join('')}
+      </div>
+    </div>
+    <div class="tip-box">
+      <h3>Næste skridt</h3>
+      <p>Brug din profil som udgangspunkt for en samtale med din leder eller dine kolleger. Vælg 1–2 kompetencer, du vil udvikle de næste 6 måneder, og tænk over, hvordan du kan øve dem i din daglige opgaveløsning.</p>
+    </div>
+    <div class="restart-row"><button class="btn" onclick="restart()">Start forfra</button></div>`;
+
+  setTimeout(() => {
+    const ctx = document.getElementById('radarChart');
+    if (!ctx) return;
+    if (radarChart) { radarChart.destroy(); radarChart = null; }
+    radarChart = new Chart(ctx, {
+      type: 'radar',
+      data: {
+        labels: QS.map(q => q.title),
+        datasets: [{
+          label: 'Din profil',
+          data: scores,
+          backgroundColor: 'rgba(0,159,227,0.12)',
+          borderColor: '#009FE3',
+          borderWidth: 2,
+          pointBackgroundColor: '#004052',
+          pointBorderColor: '#009FE3',
+          pointRadius: 5
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { r: {
+          min: 0, max: 3,
+          ticks: { stepSize: 1, display: false },
+          pointLabels: { font: { size: 11, family: "'DM Sans', sans-serif" }, color: '#649DB8' },
+          grid: { color: 'rgba(0,64,82,0.08)' },
+          angleLines: { color: 'rgba(0,64,82,0.08)' }
+        }}
+      }
+    });
+  }, 100);
+}
+
+function nextStep() {
+  step++;
+  if (step === 0) renderAfdeling();
+  else if (step === 1) renderRolle();
+  else if (step >= 2 && step <= 8) renderQ(step - 2);
+  else submitAndShow();
+  setProgress();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function prevStep() {
+  step--;
+  if (step === 0) renderAfdeling();
+  else if (step === 1) renderRolle();
+  else renderQ(step - 2);
+  setProgress();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function restart() {
+  step = 0; afdeling = null; rolle = null; answers = new Array(7).fill(null);
+  if (radarChart) { radarChart.destroy(); radarChart = null; }
+  renderAfdeling(); setProgress();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+renderAfdeling();
+setProgress();
+</script>
+</body>
+</html>
