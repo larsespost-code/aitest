@@ -136,6 +136,9 @@ body { font-family: var(--font); color: var(--hk-dark); min-height: 100vh; backg
 .rdot.filled { background: var(--hk-blue); }
 .score-val { font-size: 12px; font-weight: 700; color: var(--hk-dark); text-align: right; min-width: 72px; }
 .pdf-row { text-align: center; margin-top: 1.25rem; }
+.personal-box { background: #fff; border: 1px solid var(--hk-warm); border-left: 4px solid var(--hk-blue); border-radius: var(--r); padding: 1rem 1.25rem; margin-bottom: 1rem; }
+.personal-strength { font-size: 15px; color: var(--hk-dark); line-height: 1.6; margin-bottom: .4rem; }
+.personal-develop { font-size: 14px; color: var(--hk-mid); line-height: 1.6; margin-top: .5rem; padding-top: .5rem; border-top: 1px solid var(--hk-warm); }
 </style>
 </head>
 <body>
@@ -241,17 +244,28 @@ const NOT_YET = "Jeg har ingen eller lidt erfaring med dette";
 const ARCHETYPES = {
   generalist: {
     label: "Digital generalist",
-    desc: "Du bruger AI som et praktisk redskab i hverdagen og er på vej til at forstå teknologien godt nok til at anvende den ansvarligt og effektivt. Tyngdepunktet er AI-forståelse og AI-brug."
+    desc: "Du bruger AI som et praktisk redskab i hverdagen. Du er på vej til at forstå teknologien godt nok til at anvende den ansvarligt og effektivt."
   },
   integrator: {
     label: "Digital integrator",
-    desc: "Du bygger bro mellem teknologi og kolleger, og er godt på vej til at forankre AI bredt i din hverdag. Du er stærk på kommunikation, samarbejde og ansvarlig praksis."
+    desc: "Du bygger bro mellem teknologi og kolleger. Du er god til at spotte muligheder, dele viden og sikre at AI bruges ansvarligt i fællesskabet."
   },
   specialist: {
     label: "Digital specialist",
-    desc: "Du arbejder dybt med at finde og eksperimentere med nye AI-løsninger. Du er stærk på innovation og problemløsning, og kan bidrage til at løfte organisationen."
+    desc: "Du går i dybden med AI-værktøjer og avancerede teknikker. Du eksperimenterer systematisk og kan løfte andre med dig."
   }
 };
+
+const Q_NAMES = [
+  "praktisk AI-brug",
+  "prompt-formulering",
+  "kvalitetssikring af AI-svar",
+  "faglig sparring med AI",
+  "ansvarlig AI-brug",
+  "at identificere muligheder for AI",
+  "videndeling med kolleger",
+  "brug af specialiserede AI-værktøjer"
+];
 
 let step = 0, rolle = null, answers = new Array(8).fill(null), radarChart = null;
 const TOTAL = 9;
@@ -259,9 +273,34 @@ const TOTAL = 9;
 function getArchetype() {
   const s = answers.map(a => a === null ? 0 : a);
   const avg = s.reduce((a,b) => a+b, 0) / 8;
-  if (s[7] === 3 || (s[0] + s[1] + s[7]) >= 7) return "specialist";
-  if (avg < 1.5) return "generalist";
-  return "integrator";
+  // Specialist: goes deep on tools (Q8) and advanced prompting (Q2)
+  if (s[7] >= 2 && s[1] >= 2 && avg >= 1.5) return "specialist";
+  // Integrator: bridges colleagues (Q7) and spots opportunities (Q6), responsible (Q5)
+  if (s[6] >= 2 && s[5] >= 2 && avg >= 1.5) return "integrator";
+  // Generalist: practical everyday user
+  return "generalist";
+}
+
+function getPersonalText(scores) {
+  const indexed = scores.map((s,i) => ({s, i})).sort((a,b) => b.s - a.s);
+  const top = indexed.filter(x => x.s >= 2).slice(0, 2);
+  const bottom = indexed.filter(x => x.s <= 1).slice(-1);
+
+  let strength = '';
+  if (top.length >= 2) {
+    strength = `Du er særlig stærk på <strong>${Q_NAMES[top[0].i]}</strong> og <strong>${Q_NAMES[top[1].i]}</strong>.`;
+  } else if (top.length === 1) {
+    strength = `Du er særlig stærk på <strong>${Q_NAMES[top[0].i]}</strong>.`;
+  } else {
+    strength = 'Du er på vej i gang med AI — det er et godt udgangspunkt.';
+  }
+
+  let develop = '';
+  if (bottom.length >= 1 && bottom[0].s < 2) {
+    develop = `Et naturligt næste skridt er at arbejde mere med <strong>${Q_NAMES[bottom[0].i]}</strong>.`;
+  }
+
+  return { strength, develop };
 }
 
 function setProgress() {
@@ -365,12 +404,17 @@ async function submitAndShow() {
 
 function renderResult(archKey, scores) {
   const arch = ARCHETYPES[archKey];
+  const { strength, develop } = getPersonalText(scores);
   document.getElementById('app').innerHTML = `
     <div id="result-content">
       <div class="result-top">
         <div class="arch-chip">${arch.label}</div>
         <div class="result-name">${rolle || ''}</div>
         <div class="result-desc">${arch.desc}</div>
+      </div>
+      <div class="personal-box">
+        <div class="personal-strength">${strength}</div>
+        ${develop ? `<div class="personal-develop">${develop}</div>` : ''}
       </div>
       <div class="card">
         <div style="text-align:center;margin-bottom:.75rem">
